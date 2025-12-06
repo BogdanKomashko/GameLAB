@@ -1,6 +1,6 @@
 // ===== КОНФІГУРАЦІЯ =====
 const CONFIG = {
-    CANVAS_WIDTH: 1200,
+    CANVAS_WIDTH: 2000, // Збільшено для більших рівнів
     CANVAS_HEIGHT: 700,
     GRAVITY: 0.8,
     JUMP_STRENGTH: -15,
@@ -22,6 +22,9 @@ let level = null;
 let keys = {};
 let lastTime = 0;
 let invincibilityTimer = 0;
+let cameraX = 0; // Позиція камери
+const VIEW_WIDTH = 1200; // Видима ширина екрану
+const VIEW_HEIGHT = 700; // Видима висота екрану
 
 // ===== КЛАС ГРАВЦЯ =====
 class Player {
@@ -79,35 +82,98 @@ class Player {
         this.x += this.velocityX;
         this.y += this.velocityY;
 
-        // Межі екрану
+        // Межі екрану (тепер рівень ширший)
         this.x = Math.max(0, Math.min(CONFIG.CANVAS_WIDTH - this.width, this.x));
     }
 
     draw() {
         ctx.save();
         
-        // Тіло жаби (простий прямокутник з очима)
-        ctx.fillStyle = '#00ff00';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-        
-        // Очі
-        ctx.fillStyle = '#ff00ff';
-        const eyeSize = 8;
-        const eyeY = this.y + 10;
-        ctx.fillRect(this.x + 8, eyeY, eyeSize, eyeSize);
-        ctx.fillRect(this.x + 24, eyeY, eyeSize, eyeSize);
-        
-        // Атака (простий ефект)
-        if (this.attacking) {
-            ctx.strokeStyle = '#ffff00';
-            ctx.lineWidth = 3;
-            const attackX = this.facing === 1 ? this.x + this.width : this.x - 20;
-            ctx.strokeRect(attackX, this.y + 10, 20, 30);
-        }
-
         // Ефект невразливості
         if (invincibilityTimer > 0 && Math.floor(invincibilityTimer / 100) % 2) {
             ctx.globalAlpha = 0.5;
+        }
+        
+        const centerX = this.x + this.width / 2;
+        const centerY = this.y + this.height / 2;
+        
+        // Тіло жаби (овальне, кібер-стиль)
+        ctx.fillStyle = '#00ff00';
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY + 5, this.width / 2 - 2, this.height / 2 - 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Освітлення на тілі
+        ctx.fillStyle = '#66ff66';
+        ctx.beginPath();
+        ctx.ellipse(centerX - 5, centerY - 5, this.width / 3, this.height / 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Кібер-панелі на спині
+        ctx.strokeStyle = '#00cc00';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(this.x + 5, this.y + 15, 10, 8);
+        ctx.strokeRect(this.x + 25, this.y + 15, 10, 8);
+        
+        // Очі (великі, світляні)
+        const eyeY = this.y + 12;
+        const eyeSpacing = 12;
+        const leftEyeX = centerX - eyeSpacing;
+        const rightEyeX = centerX + eyeSpacing;
+        const eyeSize = 10;
+        
+        // Зіниці (червоні, кібер-стиль)
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(leftEyeX, eyeY, eyeSize, 0, Math.PI * 2);
+        ctx.arc(rightEyeX, eyeY, eyeSize, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Блики в очах
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(leftEyeX - 2, eyeY - 2, 3, 0, Math.PI * 2);
+        ctx.arc(rightEyeX - 2, eyeY - 2, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Рот (простий, але стильний)
+        ctx.strokeStyle = '#00cc00';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(centerX, this.y + 35, 8, 0, Math.PI);
+        ctx.stroke();
+        
+        // Лапи (нижні)
+        ctx.fillStyle = '#00cc00';
+        ctx.fillRect(this.x + 5, this.y + this.height - 8, 8, 8);
+        ctx.fillRect(this.x + this.width - 13, this.y + this.height - 8, 8, 8);
+        
+        // Анімація атаки (енергетичний ефект)
+        if (this.attacking) {
+            ctx.strokeStyle = '#ffff00';
+            ctx.fillStyle = '#ffff00';
+            ctx.lineWidth = 4;
+            const attackX = this.facing === 1 ? this.x + this.width : this.x - 30;
+            const attackY = this.y + 15;
+            
+            // Енергетичний вибух
+            ctx.globalAlpha = 0.7;
+            ctx.beginPath();
+            ctx.arc(attackX + (this.facing === 1 ? 15 : -15), attackY + 15, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Світлові промені
+            for (let i = 0; i < 5; i++) {
+                const angle = (Math.PI * 2 / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(attackX + (this.facing === 1 ? 15 : -15), attackY + 15);
+                ctx.lineTo(
+                    attackX + (this.facing === 1 ? 15 : -15) + Math.cos(angle) * 20,
+                    attackY + 15 + Math.sin(angle) * 20
+                );
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
         }
         
         ctx.restore();
@@ -307,44 +373,90 @@ class Level {
     }
 
     initLevel1() {
-        // Платформи
+        // Платформи (розширений рівень)
         this.platforms = [
+            // Стартова зона
             new Platform(0, CONFIG.CANVAS_HEIGHT - 50, 200, 50),
             new Platform(250, CONFIG.CANVAS_HEIGHT - 150, 150, 50),
             new Platform(450, CONFIG.CANVAS_HEIGHT - 250, 150, 50),
             new Platform(650, CONFIG.CANVAS_HEIGHT - 350, 150, 50),
             new Platform(850, CONFIG.CANVAS_HEIGHT - 250, 150, 50),
             new Platform(1050, CONFIG.CANVAS_HEIGHT - 150, 150, 50),
+            
+            // Середня зона
             new Platform(300, CONFIG.CANVAS_HEIGHT - 50, 200, 50),
             new Platform(550, CONFIG.CANVAS_HEIGHT - 50, 200, 50),
             new Platform(800, CONFIG.CANVAS_HEIGHT - 50, 200, 50),
             new Platform(1050, CONFIG.CANVAS_HEIGHT - 50, 150, 50),
+            
+            // Нова зона 1
+            new Platform(1250, CONFIG.CANVAS_HEIGHT - 200, 150, 50),
+            new Platform(1450, CONFIG.CANVAS_HEIGHT - 300, 150, 50),
+            new Platform(1650, CONFIG.CANVAS_HEIGHT - 200, 150, 50),
+            new Platform(1200, CONFIG.CANVAS_HEIGHT - 50, 200, 50),
+            new Platform(1450, CONFIG.CANVAS_HEIGHT - 50, 200, 50),
+            new Platform(1700, CONFIG.CANVAS_HEIGHT - 50, 200, 50),
+            
+            // Нова зона 2 (перед дверима)
+            new Platform(1850, CONFIG.CANVAS_HEIGHT - 150, 100, 50),
+            new Platform(1900, CONFIG.CANVAS_HEIGHT - 50, 100, 50),
+            
             // Пастки
             new Platform(500, CONFIG.CANVAS_HEIGHT - 50, 50, 50, 'trap'),
             new Platform(750, CONFIG.CANVAS_HEIGHT - 50, 50, 50, 'trap'),
+            new Platform(1300, CONFIG.CANVAS_HEIGHT - 50, 50, 50, 'trap'),
+            new Platform(1600, CONFIG.CANVAS_HEIGHT - 50, 50, 50, 'trap'),
         ];
 
-        // Вороги
+        // Вороги (більше)
         this.enemies = [
             new Enemy(300, CONFIG.CANVAS_HEIGHT - 80, 'robo-rat'),
             new Enemy(600, CONFIG.CANVAS_HEIGHT - 80, 'robo-rat'),
             new Enemy(900, CONFIG.CANVAS_HEIGHT - 80, 'robo-rat'),
+            new Enemy(1200, CONFIG.CANVAS_HEIGHT - 80, 'robo-rat'),
+            new Enemy(1500, CONFIG.CANVAS_HEIGHT - 80, 'robo-rat'),
+            new Enemy(1750, CONFIG.CANVAS_HEIGHT - 80, 'robo-rat'),
         ];
 
-        // Енергія
-        for (let i = 0; i < 10; i++) {
-            const x = 100 + i * 100;
-            const y = CONFIG.CANVAS_HEIGHT - 200 - (i % 3) * 100;
-            this.energies.push(new Energy(x, y));
-        }
+        // Енергія (більше - 20 штук)
+        const energyPositions = [
+            // Перша зона
+            {x: 100, y: CONFIG.CANVAS_HEIGHT - 200},
+            {x: 350, y: CONFIG.CANVAS_HEIGHT - 200},
+            {x: 500, y: CONFIG.CANVAS_HEIGHT - 300},
+            {x: 700, y: CONFIG.CANVAS_HEIGHT - 400},
+            {x: 900, y: CONFIG.CANVAS_HEIGHT - 300},
+            {x: 1100, y: CONFIG.CANVAS_HEIGHT - 200},
+            // Друга зона
+            {x: 1300, y: CONFIG.CANVAS_HEIGHT - 250},
+            {x: 1500, y: CONFIG.CANVAS_HEIGHT - 350},
+            {x: 1700, y: CONFIG.CANVAS_HEIGHT - 250},
+            {x: 1250, y: CONFIG.CANVAS_HEIGHT - 100},
+            {x: 1450, y: CONFIG.CANVAS_HEIGHT - 100},
+            {x: 1650, y: CONFIG.CANVAS_HEIGHT - 100},
+            // Третя зона
+            {x: 1350, y: CONFIG.CANVAS_HEIGHT - 150},
+            {x: 1550, y: CONFIG.CANVAS_HEIGHT - 150},
+            {x: 1750, y: CONFIG.CANVAS_HEIGHT - 150},
+            {x: 1400, y: CONFIG.CANVAS_HEIGHT - 250},
+            {x: 1600, y: CONFIG.CANVAS_HEIGHT - 250},
+            {x: 1800, y: CONFIG.CANVAS_HEIGHT - 200},
+            {x: 1900, y: CONFIG.CANVAS_HEIGHT - 200},
+            {x: 1850, y: CONFIG.CANVAS_HEIGHT - 200},
+        ];
+        
+        energyPositions.forEach(pos => {
+            this.energies.push(new Energy(pos.x, pos.y));
+        });
 
-        // Двері
-        this.door = { x: 1150, y: CONFIG.CANVAS_HEIGHT - 200, width: 50, height: 100 };
+        // Двері (перенесені далі)
+        this.door = { x: 1950, y: CONFIG.CANVAS_HEIGHT - 200, width: 50, height: 100 };
     }
 
     initLevel2() {
-        // Швидший рівень з ближчими платформами
+        // Швидший рівень з ближчими платформами (розширений)
         this.platforms = [
+            // Стартова зона
             new Platform(0, CONFIG.CANVAS_HEIGHT - 50, 150, 50),
             new Platform(200, CONFIG.CANVAS_HEIGHT - 120, 100, 50),
             new Platform(350, CONFIG.CANVAS_HEIGHT - 190, 100, 50),
@@ -353,20 +465,34 @@ class Level {
             new Platform(800, CONFIG.CANVAS_HEIGHT - 120, 100, 50),
             new Platform(950, CONFIG.CANVAS_HEIGHT - 50, 150, 50),
             new Platform(1100, CONFIG.CANVAS_HEIGHT - 50, 100, 50),
-            // Падаючі блоки
+            
+            // Середня зона
+            new Platform(1250, CONFIG.CANVAS_HEIGHT - 180, 100, 50),
+            new Platform(1400, CONFIG.CANVAS_HEIGHT - 120, 100, 50),
+            new Platform(1550, CONFIG.CANVAS_HEIGHT - 200, 100, 50),
+            new Platform(1700, CONFIG.CANVAS_HEIGHT - 140, 100, 50),
+            new Platform(1850, CONFIG.CANVAS_HEIGHT - 50, 150, 50),
+            
+            // Падаючі блоки (більше)
             new Platform(400, 100, 80, 50, 'falling'),
             new Platform(700, 150, 80, 50, 'falling'),
+            new Platform(1200, 200, 80, 50, 'falling'),
+            new Platform(1500, 180, 80, 50, 'falling'),
+            new Platform(1800, 220, 80, 50, 'falling'),
         ];
 
-        // Дрони
+        // Дрони (більше)
         this.enemies = [
             new Enemy(200, 200, 'drone-eye'),
             new Enemy(500, 300, 'drone-eye'),
             new Enemy(800, 250, 'drone-eye'),
+            new Enemy(1200, 200, 'drone-eye'),
+            new Enemy(1500, 280, 'drone-eye'),
+            new Enemy(1800, 220, 'drone-eye'),
         ];
 
-        // Ядро
-        this.core = { x: 1100, y: CONFIG.CANVAS_HEIGHT - 200, width: 80, height: 80 };
+        // Ядро (перенесене далі)
+        this.core = { x: 1900, y: CONFIG.CANVAS_HEIGHT - 200, width: 80, height: 80 };
     }
 
     update() {
@@ -491,7 +617,7 @@ function handleCollisions() {
     // Двері (рівень 1)
     if (level.door && checkCollision(player, level.door)) {
         const collectedCount = level.energies.filter(e => e.collected).length;
-        if (collectedCount >= 10) {
+        if (collectedCount >= 15) { // Збільшено вимогу до 15 енергій
             // Перехід на рівень 2
             setTimeout(() => {
                 currentLevel = 2;
@@ -548,9 +674,19 @@ function gameLoop(timestamp) {
     }
 
     if (gameState === 'playing') {
+        // Оновлення камери (слідкує за гравцем)
+        if (player) {
+            cameraX = player.x - VIEW_WIDTH / 2;
+            cameraX = Math.max(0, Math.min(cameraX, CONFIG.CANVAS_WIDTH - VIEW_WIDTH));
+        }
+        
         // Очищення canvas
         ctx.fillStyle = '#1a1a2e';
-        ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+        ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+        
+        // Зсув контексту для камери
+        ctx.save();
+        ctx.translate(-cameraX, 0);
 
         // Оновлення
         if (player) player.update();
@@ -562,6 +698,8 @@ function gameLoop(timestamp) {
         // Малювання
         if (level) level.draw();
         if (player) player.draw();
+        
+        ctx.restore();
     }
 
     requestAnimationFrame(gameLoop);
@@ -578,8 +716,8 @@ document.addEventListener('keyup', (e) => {
 
 // ===== ІНІЦІАЛІЗАЦІЯ =====
 function initCanvas() {
-    canvas.width = CONFIG.CANVAS_WIDTH;
-    canvas.height = CONFIG.CANVAS_HEIGHT;
+    canvas.width = VIEW_WIDTH;
+    canvas.height = VIEW_HEIGHT;
 }
 
 function startLevel(levelNum) {
@@ -587,6 +725,7 @@ function startLevel(levelNum) {
     player = new Player(50, CONFIG.CANVAS_HEIGHT - 100);
     level = new Level(levelNum);
     invincibilityTimer = 0;
+    cameraX = 0; // Скидаємо камеру
     updateUI();
 }
 
