@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberToads: Rage Metro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Start Menu -->
+        <div id="startMenu" class="screen">
+            <h1>CyberToads: Rage Metro</h1>
+            <p class="subtitle">Кібер-жаба проти AI-корольового модуля</p>
+            <button id="startButton" class="btn">Почати гру</button>
+            <button id="settingsButton" class="btn">Налаштування</button>
+        </div>
+
+        <!-- Settings Menu -->
+        <div id="settingsMenu" class="screen hidden">
+            <h2>Налаштування</h2>
+            <div class="setting-item">
+                <label>Гучність:</label>
+                <input type="range" id="volumeSlider" min="0" max="100" value="50">
+                <span id="volumeValue">50%</span>
+            </div>
+            <button id="backButton" class="btn">Назад</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="screen hidden">
+            <h2>Game Over</h2>
+            <p id="finalScore">Очки: 0</p>
+            <button id="restartButton" class="btn">Спробувати знову</button>
+            <button id="menuButton" class="btn">Головне меню</button>
+        </div>
+
+        <!-- You Win Screen -->
+        <div id="winScreen" class="screen hidden">
+            <h2>You Win!</h2>
+            <p>Ви зупинили AI-корольовий модуль!</p>
+            <p id="winScore">Очки: 0</p>
+            <button id="playAgainButton" class="btn">Грати знову</button>
+            <button id="winMenuButton" class="btn">Головне меню</button>
+        </div>
+
+        <!-- Game UI -->
+        <div id="gameUI" class="hidden">
+            <div id="healthBar">
+                <span>HP:</span>
+                <div id="hearts">❤️❤️❤️</div>
+            </div>
+            <div id="scoreDisplay">Очки: <span id="score">0</span></div>
+            <div id="levelDisplay">Рівень: <span id="level">1</span></div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

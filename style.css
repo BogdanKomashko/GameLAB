@@ -1,0 +1,153 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: #0a0a0a;
+    color: #00ff00;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#gameContainer {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#gameCanvas {
+    border: 2px solid #00ff00;
+    background: #1a1a2e;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 10, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    text-align: center;
+}
+
+.screen.hidden {
+    display: none;
+}
+
+.screen h1 {
+    font-size: 3em;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+    color: #00ff00;
+}
+
+.screen h2 {
+    font-size: 2.5em;
+    margin-bottom: 30px;
+    text-shadow: 0 0 10px #00ff00;
+    color: #00ff00;
+}
+
+.subtitle {
+    font-size: 1.2em;
+    margin-bottom: 40px;
+    color: #00ffff;
+}
+
+.btn {
+    padding: 15px 30px;
+    font-size: 1.2em;
+    font-family: 'Courier New', monospace;
+    background: #00ff00;
+    color: #000;
+    border: 2px solid #00ff00;
+    cursor: pointer;
+    margin: 10px;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.btn:hover {
+    background: #00cc00;
+    box-shadow: 0 0 20px #00ff00;
+    transform: scale(1.05);
+}
+
+.btn:active {
+    transform: scale(0.95);
+}
+
+.setting-item {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 1.2em;
+}
+
+.setting-item label {
+    min-width: 100px;
+}
+
+.setting-item input[type="range"] {
+    width: 200px;
+    cursor: pointer;
+}
+
+.setting-item span {
+    min-width: 50px;
+    text-align: left;
+}
+
+#gameUI {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 5;
+    color: #00ff00;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px #000;
+}
+
+#gameUI.hidden {
+    display: none;
+}
+
+#healthBar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+#hearts {
+    font-size: 1.5em;
+    letter-spacing: 5px;
+}
+
+#scoreDisplay, #levelDisplay {
+    margin-bottom: 5px;
+}
+
+#scoreDisplay span, #levelDisplay span {
+    color: #00ffff;
+}
